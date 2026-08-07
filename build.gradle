@@ -1,15 +1,15 @@
 plugins {
     id 'eclipse'
-    id 'net.neoforged.moddev' version '2.0.95'
+    id 'net.neoforged.moddev.legacyforge' version '2.0.142'
 }
 
 version = '1.0'
 base.archivesName = "modid"
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
-neoForge {
-    version = "21.1.176"
+legacyForge {
+    version = "1.20.1-47.4.22"
 
     runs {
         client {
@@ -43,6 +43,25 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
 }
 
-apply from: 'mcreator.gradle'
+mixin {
+    if (file("src/main/resources/immersive_stamina.mixins.json").exists()) {
+        add sourceSets.main, "immersive_stamina.refmap.json"
+        config "immersive_stamina.mixins.json"
+    }
+}
 
-apply from: 'mods.gradle'
+dependencies {
+    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.5.0"))
+    implementation(jarJar("io.github.llamalad7:mixinextras-forge:0.5.0"))
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+}
+
+jar {
+    if (file("src/main/resources/immersive_stamina.mixins.json").exists()) {
+        manifest.attributes([
+                "MixinConfigs": "immersive_stamina.mixins.json"
+        ])
+    }
+}
+
+apply from: 'mcreator.gradle'
